@@ -43,8 +43,6 @@ import com.google.zxing.client.android.clipboard.ClipboardInterface;
  */
 public final class ShareActivity extends Activity {
 
-  private static final String TAG = ShareActivity.class.getSimpleName();
-
   private static final int PICK_BOOKMARK = 0;
   private static final int PICK_CONTACT = 1;
   private static final int PICK_APP = 2;
@@ -96,7 +94,7 @@ public final class ShareActivity extends Activity {
     public boolean onKey(View view, int keyCode, KeyEvent event) {
       if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
         String text = ((TextView) view).getText().toString();
-        if (text != null && !text.isEmpty()) {
+        if (!text.isEmpty()) {
           launchSearch(text);
         }
         return true;
@@ -106,11 +104,8 @@ public final class ShareActivity extends Activity {
   };
 
   private void launchSearch(String text) {
-    Intent intent = new Intent(Intents.Encode.ACTION);
-    intent.addFlags(Intents.FLAG_NEW_DOC);
-    intent.putExtra(Intents.Encode.TYPE, Contents.Type.TEXT);
+    Intent intent = buildEncodeIntent(Contents.Type.TEXT);
     intent.putExtra(Intents.Encode.DATA, text);
-    intent.putExtra(Intents.Encode.FORMAT, BarcodeFormat.QR_CODE.toString());
     startActivity(intent);
   }
 
@@ -158,11 +153,8 @@ public final class ShareActivity extends Activity {
     if (text == null) {
       return; // Show error?
     }
-    Intent intent = new Intent(Intents.Encode.ACTION);
-    intent.addFlags(Intents.FLAG_NEW_DOC);
-    intent.putExtra(Intents.Encode.TYPE, Contents.Type.TEXT);
+    Intent intent = buildEncodeIntent(Contents.Type.TEXT);
     intent.putExtra(Intents.Encode.DATA, text);
-    intent.putExtra(Intents.Encode.FORMAT, BarcodeFormat.QR_CODE.toString());
     startActivity(intent);
   }
 
@@ -251,13 +243,18 @@ public final class ShareActivity extends Activity {
       }
     }
 
-    Intent intent = new Intent(Intents.Encode.ACTION);
-    intent.addFlags(Intents.FLAG_NEW_DOC);
-    intent.putExtra(Intents.Encode.TYPE, Contents.Type.CONTACT);
+    Intent intent = buildEncodeIntent(Contents.Type.CONTACT);
     intent.putExtra(Intents.Encode.DATA, bundle);
-    intent.putExtra(Intents.Encode.FORMAT, BarcodeFormat.QR_CODE.toString());
-
     startActivity(intent);
+  }
+
+  private static Intent buildEncodeIntent(String type) {
+    Intent intent = new Intent(Intents.Encode.ACTION);
+    intent.setPackage("com.google.zxing.client.android");
+    intent.addFlags(Intents.FLAG_NEW_DOC);
+    intent.putExtra(Intents.Encode.TYPE, type);
+    intent.putExtra(Intents.Encode.FORMAT, BarcodeFormat.QR_CODE.toString());
+    return intent;
   }
 
   private static String massageContactData(String data) {
